@@ -1,23 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPTV Player</title>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15"></script>
 </head>
 <body>
-  <video id="video" controls width="640" height="360"></video>
+  <div class="container">
+    <video id="video" controls width="640" height="360"></video>
+    <p id="status">Loading stream...</p>
+  </div>
   <script>
     const video = document.getElementById('video');
-    const videoSrc = 'https://your-vercel-project.vercel.app/api/proxy'; // Replace with your Vercel proxy URL
-    if (HLS.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(videoSrc);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = videoSrc;
-      video.addEventListener('loadedmetadata', () => video.play());
+    const status = document.getElementById('status');
+    const videoSrc = '/api/proxy'; // Relative path to proxy
+
+    function loadStream() {
+      if (Hls.isSupported()) {
+        const hls = new Hls({
+          debug: true, // Enable debug for troubleshooting
+          xhrSetup: (xhr) => {
+            xhr.withCredentials = false; // Disable credentials for simplicity
+          }
+        });
+        hls.loadSource(videoSrc);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => {
+          status.textContent = 'Stream loaded!';
+          video.play().catch(err => {
+            status.textContent = 'Play error: ' + err.message;
+          });
+        });
+        hls.on(Hls.Events.ERROR, (event, data) => {
+          status.textContent = 'HLS error: ' + data.type + ' - ' + data.details;
+          console.error('HLS error:', data);
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = videoSrc;
+        video.addEventListener('loadedmetadata', () => {
+          status.textContent = 'Stream loaded (native)!';
+          video.play().catch(err => {
+            status.textContent = 'Play error: ' + err.message;
+          });
+        });
+      } else {
+        status.textContent = 'HLS not supported by your browser.';
+      }
     }
+
+    // Load stream on page load
+    loadStream();
   </script>
 </body>
 </html>
