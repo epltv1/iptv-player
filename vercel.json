@@ -6,14 +6,14 @@
       "use": "@vercel/static"
     },
     {
-      "src": "api/proxy.js",
+      "src": "src/server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/proxy",
-      "dest": "/api/proxy.js"
+      "src": "/api/v1/streamingProxy",
+      "dest": "/src/server.js"
     },
     {
       "src": "/(.*)",
