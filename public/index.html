@@ -15,7 +15,7 @@
   <script>
     const video = document.getElementById('video');
     const status = document.getElementById('status');
-    const videoSrc = '/api/proxy?url=' + encodeURIComponent('http://starshare.st:80/live/97536964/97526028/23342.m3u8');
+    const videoSrc = '/api/v1/streamingProxy?url=' + encodeURIComponent('http://starshare.st:80/live/97536964/97526028/23342.m3u8');
 
     function loadStream() {
       if (Hls.isSupported()) {
@@ -24,7 +24,6 @@
           enableWorker: true,
           lowLatencyMode: true,
           xhrSetup: (xhr, url) => {
-            xhr.withCredentials = false;
             xhr.setRequestHeader('Referer', 'http://starshare.st');
             xhr.setRequestHeader('Origin', 'http://starshare.st');
           }
@@ -42,7 +41,7 @@
           console.error('HLS error:', data);
           if (data.fatal) {
             hls.destroy();
-            setTimeout(loadStream, 3000); // Retry after 3s
+            setTimeout(loadStream, 3000);
           }
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -57,7 +56,6 @@
         status.textContent = 'HLS not supported by your browser.';
       }
     }
-
     loadStream();
   </script>
 </body>
