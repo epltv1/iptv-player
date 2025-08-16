@@ -1,0 +1,14 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+video {
+  width: 100%;
+  max-width: 640px;
+  background: black;
+}
+#status {
+  color: #333;
+  margin-top: 10px;
+}
