@@ -15,14 +15,18 @@
   <script>
     const video = document.getElementById('video');
     const status = document.getElementById('status');
-    const videoSrc = '/api/proxy'; // Relative path to proxy
+    const videoSrc = '/api/proxy?url=' + encodeURIComponent('http://starshare.st:80/live/97536964/97526028/23342.m3u8');
 
     function loadStream() {
       if (Hls.isSupported()) {
         const hls = new Hls({
-          debug: true, // Enable debug for troubleshooting
-          xhrSetup: (xhr) => {
-            xhr.withCredentials = false; // Disable credentials for simplicity
+          debug: true,
+          enableWorker: true,
+          lowLatencyMode: true,
+          xhrSetup: (xhr, url) => {
+            xhr.withCredentials = false;
+            xhr.setRequestHeader('Referer', 'http://starshare.st');
+            xhr.setRequestHeader('Origin', 'http://starshare.st');
           }
         });
         hls.loadSource(videoSrc);
@@ -34,8 +38,12 @@
           });
         });
         hls.on(Hls.Events.ERROR, (event, data) => {
-          status.textContent = 'HLS error: ' + data.type + ' - ' + data.details;
+          status.textContent = `HLS error: ${data.type} - ${data.details} (${data.reason || 'unknown'})`;
           console.error('HLS error:', data);
+          if (data.fatal) {
+            hls.destroy();
+            setTimeout(loadStream, 3000); // Retry after 3s
+          }
         });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = videoSrc;
@@ -50,7 +58,6 @@
       }
     }
 
-    // Load stream on page load
     loadStream();
   </script>
 </body>
